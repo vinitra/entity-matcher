@@ -1,0 +1,4 @@
+pandas>=0.20.3
+metaphone
+fuzzywuzzy
+python-dateutil
