@@ -3,7 +3,7 @@
 """
 Module description
 """
-from src import DATA_PATH
+from config import DATA_PATH
 
 import pandas as pd
 import os

@@ -3,13 +3,13 @@
 """
 Module description
 """
-from src.data_loader import DataLoader
-from src.blocking import Blocking
-from src import DATA_PATH
+
+from data_loader import DataLoader
+from blocking import X2_Blocker, Blocker
+from config import DATA_PATH
 
 import pandas as pd
 import os
-
 
 def main(dataset_name):
     """
@@ -23,15 +23,21 @@ def main(dataset_name):
     data = dl.load_data(dataset_name)
 
     # blocking
-    blocking = Blocking()
-    blocking.fit(data=data)
-    blocks = blocking.transform(data=data)
+    if dataset_name == 'X2':  # Instantiate correct blocker based on dataset
+        blocker = X2_Blocker()
+    else:
+        blocker = Blocker()
+    blocker.fit(data=data)
+    # blocks is of type [[instance_id]]
+    # list of lists of instance_ids belonging to same group
+    # transform returns modified data frame for further use
+    blocks, data = blocker.transform()
 
     pairs = []
     for block in blocks:
         # apply clustering for each block to get matching pairs
-        break
-
+        print(len(block))
+    
     # write pairs
     pairs_df = pd.DataFrame(data=pairs, columns=['left_instance_id', 'right_instance_id'])
     pairs_df.to_csv(os.path.join(DATA_PATH, 'results', 'results_{}.csv'.format(dataset_name)))
