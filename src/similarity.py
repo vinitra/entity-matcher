@@ -2,27 +2,9 @@
 import numpy as np
 
 model = None
+read_blocking_file = "..\data\X2_blocking_keys.csv"
+clusters_file = "..\data\clustered_x2.csv"
 
-# encoder-based similarity functions
-
-def cosine_similarity(u, v):
-    return np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v))
-
-def calculate_embeddings(u, v):
-    if not model:
-        model = prepare_encoder()
-    u_vec = model([u])[0]
-    v_vec = model([v])[0]
-    sim = cosine(u_vec, v_vec)
-    return sim
-
-def prepare_encoder():
-    module_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
-    model = hub.load(module_url)
-    print ("module %s loaded" % module_url)
-    return model
-
-# jaccard similarity functions
 
 class Record:
     def __init__(self, rid, rtitle, rblockingKey):
@@ -31,7 +13,7 @@ class Record:
         self.blockingKey = rblockingKey
 
 def read_file():
-    with open("X2_blocking_keys_preprocessed.csv") as f:
+    with open(blocking_file) as f:
         content = f.readlines()
         records = []
         firstLine = True
@@ -50,8 +32,53 @@ def read_file():
             records.append(rec)
     return records
 
+# encoder-based similarity functions
+
+def cosine_similarity(u, v):
+    return np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v))
+
+def calculate_encoding(u, v):
+    if not model:
+        model = prepare_encoder()
+    u_vec = model([u])[0]
+    v_vec = model([v])[0]
+    sim = cosine(u_vec, v_vec)
+    return sim
+
+def prepare_encoder():
+    module_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
+    model = hub.load(module_url)
+    print ("module %s loaded" % module_url)
+    return model
+
+def generate_similarity_table(distance_metric="jaccard"):
+    records = read_file()
+    distance_function = None
+    distance_table = []
+    titles = []
+    if distance_metric == "jaccard":
+        distance_function = calculate_jaccard
+    elif distance_metric == "encoding":
+        distance_function = calculate_encoding
+    else:
+        raise Exception('distance_metric should be either "jaccard" or "encoding" to use the generate_similarity_table function.')
+
+    for r1 in records:
+        for r2 in records:
+            distance_row = []
+            if r1.id != r2.id:
+                distance = distance_function(r1, r2)
+                distance_row.append(distance)
+        distance_table.append(distance_row)
+        titles.append(r1.rtitle)
+
+    distance_df = pd.DataFrame(distance_table, columns=titles)
+    return distance_df
+
+# jaccard similarity functions
+
 def find_clusters():
-    with open("sigmod-contest-2021\data\clustered_x2.csv") as f:
+    with open(clusters_file) as f:
         content = f.readlines()
         clusters = []
         firstLine = True
@@ -68,7 +95,6 @@ def find_clusters():
                 continue
             cluster.add(attrs[0])
     return clusters
-
 
 def calculate_jaccard(r1, r2):
     tokenizedBlKey1 = tokenize(r1.blockingKey)
@@ -104,7 +130,7 @@ def tokenize(s):
     tokens = s.split()
     return tokens
 
-def run_jaccard():
+def run_jaccard_analysis():
     records = read_file()
     clusters = find_clusters()
     resultString = "id,avgInnerSim,maxInnerSim,minInnerSim,avgOuterSim,maxOuterSim,minOuterSim\n"
