@@ -2,17 +2,22 @@
 import numpy as np
 
 model = None
-read_blocking_file = "..\data\X2_blocking_keys.csv"
+blocking_file = "..\data\X2_blocking_keys.csv"
 clusters_file = "..\data\clustered_x2.csv"
 
-
 class Record:
+    """
+    Data structure representing record titles.
+    """
     def __init__(self, rid, rtitle, rblockingKey):
         self.id = rid
         self.title = rtitle
         self.blockingKey = rblockingKey
 
 def read_file():
+    """
+    Read records from file preprocessed with blocking keys.
+    """
     with open(blocking_file) as f:
         content = f.readlines()
         records = []
@@ -34,24 +39,49 @@ def read_file():
 
 # encoder-based similarity functions
 
-def cosine_similarity(u, v):
-    return np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v))
+def cosine_similarity(r1_encoded, r2_encoded):
+    """
+    Compute cosine similarity between two encoded vectors.
+    """
+    return np.dot(r1_encoded, r2_encoded) / (np.linalg.norm(r1_encoded) * np.linalg.norm(r2_encoded))
 
-def calculate_encoding(u, v):
+def calculate_encoding(r1, r2):
+    """
+    Encode row titles and calculate cosine distance between encodings.
+    """
     if not model:
         model = prepare_encoder()
-    u_vec = model([u])[0]
-    v_vec = model([v])[0]
-    sim = cosine(u_vec, v_vec)
+
+    # distance between the same row is 0
+    if r1.id == r2.id:
+        return 0
+
+    r1_encoded = model([r1.title])[0]
+    r2_encoded = model([r2.title])[0]
+    sim = cosine(r1_encoded, r2_encoded)
     return sim
 
 def prepare_encoder():
+    """
+    Prepare Universal Sentence Encoder model. Takes a few minutes to run.
+    """
     module_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
     model = hub.load(module_url)
     print ("module %s loaded" % module_url)
     return model
 
 def generate_similarity_table(distance_metric="jaccard"):
+    """
+    Generate table of similarities based on distance_metric.
+
+       |  r1  |  r2  |  r3  |  r4  ...
+       ----------------------------
+    r1 |   0  |  0.7 |  0.3 |  0.4 ...
+    r2 |  0.4 |   0  |  0.6 |  0.3 ...
+    r3 |  0.5 |  0.2 |   0  |  0.1 ...
+    r4 |  0.1 |  0.3 |  0.1 |   0  ...
+    ...
+    """
     records = read_file()
     distance_function = None
     distance_table = []
@@ -61,23 +91,28 @@ def generate_similarity_table(distance_metric="jaccard"):
     elif distance_metric == "encoding":
         distance_function = calculate_encoding
     else:
-        raise Exception('distance_metric should be either "jaccard" or "encoding" to use the generate_similarity_table function.')
+        raise Exception('distance_metric should be either "jaccard" \
+            or "encoding" to use the generate_similarity_table function.')
 
     for r1 in records:
         for r2 in records:
             distance_row = []
-            if r1.id != r2.id:
-                distance = distance_function(r1, r2)
-                distance_row.append(distance)
+            distance = distance_function(r1, r2)
+            distance_row.append(distance)
         distance_table.append(distance_row)
         titles.append(r1.rtitle)
 
     distance_df = pd.DataFrame(distance_table, columns=titles)
+    distance_df.set_index(titles)
     return distance_df
 
 # jaccard similarity functions
 
 def find_clusters():
+    """
+    Identify clusters from the ground truth (Y) dataset.
+    Used in run_jaccard_analysis function.
+    """
     with open(clusters_file) as f:
         content = f.readlines()
         clusters = []
@@ -97,6 +132,13 @@ def find_clusters():
     return clusters
 
 def calculate_jaccard(r1, r2):
+    """
+    Calculate jaccard similarity for 2 records. Return distance.
+    """
+    # if the records are the same, return 0
+    if r1.id == r2.id:
+        return 0
+
     tokenizedBlKey1 = tokenize(r1.blockingKey)
     tokenizedBlKey2 = tokenize(r2.blockingKey)
 
@@ -117,6 +159,9 @@ def calculate_jaccard(r1, r2):
 
 #title1 has more tokens than 2
 def calc_jac_titles(title1, title2):
+    """
+    Identify titles for jaccard similarity (used in calculate_jaccard)
+    """
     countIntersection = 0
     for token in title2:
         if token in title1:
@@ -126,11 +171,18 @@ def calc_jac_titles(title1, title2):
 
 
 def tokenize(s):
+    """
+    Tokenize and preprocess strings
+    """
     s = s.replace("/", " ")
     tokens = s.split()
     return tokens
 
 def run_jaccard_analysis():
+    """
+    Create a jaccard.csv file by computing jaccard distance among rows inside a cluster
+    and rows outside the cluster for analysis of jaccard metric.
+    """
     records = read_file()
     clusters = find_clusters()
     resultString = "id,avgInnerSim,maxInnerSim,minInnerSim,avgOuterSim,maxOuterSim,minOuterSim\n"
