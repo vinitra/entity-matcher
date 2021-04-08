@@ -4,18 +4,20 @@ from config import DATA_PATH, ROOT_DIR
 
 import tensorflow_hub as hub
 from sklearn.cluster import KMeans
+from sklearn.cluster import MeanShift
 import pandas as pd
 import os
 
 
 class Clustering:
-    def __init__(self, cluster_n):
+    def __init__(self, **kwargs):
         """
         Responsible for the clustering process of ER.
 
         :param cluster_n: int, the number of clusters to produce for each block
         """
-        self.cluster_n = cluster_n
+        self.method = kwargs.get("clustering_method", 'kmeans')
+        self.cluster_n = kwargs.get("cluster_n", 0)
         self.model = self.__import_sentence_encoder()
 
     def run(self, data):

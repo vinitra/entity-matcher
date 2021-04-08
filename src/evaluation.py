@@ -11,7 +11,7 @@ def get_scores(actual, pred):
     (i.e. actual data - left join - concatenation of predicted and reversed predicted data).
 
     :param actual: pd.DataFrame, all possible pairs with their labels (1 if pair else 0)
-    :param pred: pd.DataFrame, predicted pairs
+    :param pred: pd.DataFrame, predicted pairs (two column dataframe with only the matching pairs)
     :return: dict, the classification scores
     """
     # create a reversed dataset

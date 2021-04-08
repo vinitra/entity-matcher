@@ -5,7 +5,7 @@ Module description
 """
 
 from data_loader import DataLoader
-from blocking import X2Blocker, Blocker
+from blocking import X2Blocker, Blocker, X4Blocker
 from config import DATA_PATH, ROOT_DIR
 from evaluation import get_scores
 from clustering import Clustering
@@ -48,10 +48,13 @@ def run_pipeline(dataset_id, params, evaluate=False, store=True):
     data, pairs_true = dl.load_data(dataset_id)
 
     # blocking
-    if dataset_id == 2:  # Instantiate correct blocker based on dataset
+    if dataset_id in [1, 2, 3]:  # Instantiate correct blocker based on dataset
         blocker = X2Blocker()
+    elif dataset_id == 4:
+        blocker = X4Blocker()
     else:
-        blocker = Blocker()
+        raise ValueError("Please add a valid dataset id")
+
     blocker.fit(data=data)
     # blocks is of type [[instance_id]]
     # list of lists of instance_ids belonging to same group
@@ -62,19 +65,17 @@ def run_pipeline(dataset_id, params, evaluate=False, store=True):
     clusters = list()
     cls = Clustering(cluster_n=params['clusters'])
     for block in blocks:
-        # filter data based on the instance_id's presented in the block
-        block_df = data[data['instance_id'].isin(block)]
+        if len(block) > 1:
+            # filter data based on the instance_id's presented in the block
+            block_df = data[data['instance_id'].isin(block)]
 
-        clusters_l = cls.run(block_df)
+            clusters_l = cls.run(block_df)
 
-        for c in clusters_l:
-            clusters.append(c)
+            for c in clusters_l:
+                clusters.append(c)
 
     # create pairs from clusters
     pairs_pred_df = create_pairs(clusters)
-
-    if store:
-        pairs_pred_df.to_csv(os.path.join(DATA_PATH, 'results', 'results_{}.csv'.format(dataset_id)))
 
     if evaluate:
         # run performance evaluation
@@ -83,9 +84,27 @@ def run_pipeline(dataset_id, params, evaluate=False, store=True):
         print('Recall: {:.3f}'.format(scores['recall_score']))
         print('F1 score: {:.3f}'.format(scores['f1_score']))
 
+    return pairs_pred_df
+
+
+def main(datasets):
+    """
+
+    :param datasets:
+    :return:
+    """
+    outputs = list()
+    for ds in datasets:
+        print("\nRunning for dataset {}".format(ds))
+        outputs.append(run_pipeline(dataset_id=ds, params=pipeline_args, evaluate=True))
+
+    output = pd.concat(outputs, ignore_index=True)
+    output.to_csv(os.path.join(DATA_PATH, 'output.csv'), index=False)
+
 
 if __name__ == '__main__':
+    datasets_ids = [1, 2, 3, 4]
     pipeline_args = {
         "clusters": 2
     }
-    run_pipeline(dataset_id=2, params=pipeline_args, evaluate=True)
+    main(datasets_ids)

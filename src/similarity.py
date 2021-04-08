@@ -1,19 +1,22 @@
-
 import numpy as np
+import tensorflow_hub as hub
+import pandas as pd
+from dataclasses import dataclass
 
 model = None
 blocking_file = "..\data\X2_blocking_keys.csv"
 clusters_file = "..\data\clustered_x2.csv"
 
+
+@dataclass(frozen=True)
 class Record:
     """
     Data structure representing record titles.
     """
-    def __init__(self, rid, rtitle, rblockingKey, rtokenized=None):
-        self.id = rid
-        self.title = rtitle
-        self.blockingKey = rblockingKey
-        self.tokenized = rtokenized
+    id: int
+    title: str
+    blocking_key: str
+
 
 def read_file(blocked_table=None):
     """
@@ -36,13 +39,14 @@ def read_file(blocked_table=None):
                 attrs = line.split(",")
                 id = attrs[1]
                 title = attrs[14]
-                #some times we have "\n" at the end of the blocking key
+                # some times we have "\n" at the end of the blocking key
                 blockingKey = attrs[17]
                 blockingKey = blockingKey.split("\n")[0]
                 rec = Record(id, title, blockingKey)
-                #print(rec.id + rec.blockingKey)
+                # print(rec.id + rec.blockingKey)
                 records.append(rec)
     return records
+
 
 # encoder-based similarity functions
 
@@ -52,7 +56,8 @@ def cosine_similarity(r1_encoded, r2_encoded):
     """
     return np.dot(r1_encoded, r2_encoded) / (np.linalg.norm(r1_encoded) * np.linalg.norm(r2_encoded))
 
-def calculate_encoding(r1_id, r2_id, r1_encoded,r2_encoded):
+
+def calculate_encoding(r1_id, r2_id, r1_encoded, r2_encoded):
     """
     Encode row titles and calculate cosine distance between encodings.
     """
@@ -60,7 +65,9 @@ def calculate_encoding(r1_id, r2_id, r1_encoded,r2_encoded):
     if r1_id == r2_id:
         return 0
     sim = cosine(r1_encoded, r2_encoded)
+
     return sim
+
 
 def prepare_encoder():
     """
@@ -68,8 +75,9 @@ def prepare_encoder():
     """
     module_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
     model = hub.load(module_url)
-    print ("module %s loaded" % module_url)
+    print("module %s loaded" % module_url)
     return model
+
 
 def prepare_records(records):
     if not model:
@@ -78,6 +86,7 @@ def prepare_records(records):
     for r in records:
         r.tokenized = model([r.title])[0]
     return records
+
 
 def generate_similarity_table(blocking_table, distance_metric="jaccard"):
     """
@@ -116,6 +125,7 @@ def generate_similarity_table(blocking_table, distance_metric="jaccard"):
     distance_df.set_index(titles)
     return distance_df
 
+
 # jaccard similarity functions
 
 def find_clusters():
@@ -140,6 +150,7 @@ def find_clusters():
                 continue
             cluster.add(attrs[0])
     return clusters
+
 
 def calculate_jaccard(r1, r2):
     """
@@ -167,7 +178,8 @@ def calculate_jaccard(r1, r2):
         return calc_jac_titles(tokenizedTitle1, tokenizedTitle2)
     return calc_jac_titles(tokenizedTitle2, tokenizedTitle1)
 
-#title1 has more tokens than 2
+
+# title1 has more tokens than 2
 def calc_jac_titles(title1, title2):
     """
     Identify titles for jaccard similarity (used in calculate_jaccard)
@@ -177,7 +189,7 @@ def calc_jac_titles(title1, title2):
         if token in title1:
             countIntersection += 1
     countUnion = len(title1) + len(title2) - countIntersection
-    return countIntersection/countUnion
+    return countIntersection / countUnion
 
 
 def tokenize(s):
@@ -187,6 +199,7 @@ def tokenize(s):
     s = s.replace("/", " ")
     tokens = s.split()
     return tokens
+
 
 def run_jaccard_analysis():
     """
@@ -215,23 +228,24 @@ def run_jaccard_analysis():
         for r2 in records:
             if r1.id != r2.id:
                 jac = calculate_jaccard(r1, r2)
-                if r2.id in cluster: # if records in the same cluster
+                if r2.id in cluster:  # if records in the same cluster
                     # update inner similarities
                     sumInnerSim += jac
                     if (jac > maxInnerSim):
                         maxInnerSim = jac
                     if (jac < minInnerSim):
                         minInnerSim = jac
-                else: # if records in different clusters
+                else:  # if records in different clusters
                     # update outer similarities
                     sumOuterSim += jac
                     if (jac > maxOuterSim):
                         maxOuterSim = jac
                     if (jac < minOuterSim):
                         minOuterSim = jac
-        avgInnerSim = sumInnerSim/(len(cluster)-1)
-        avgOuterSim = sumOuterSim/(len(records) - len(cluster) -1)
-        resultString += (r1.id + "," + str(avgInnerSim) + "," + str(maxInnerSim)+ "," + str(minInnerSim) + "," + str(avgOuterSim) + "," + str(maxOuterSim) + "," + str(minOuterSim) + "\n")
+        avgInnerSim = sumInnerSim / (len(cluster) - 1)
+        avgOuterSim = sumOuterSim / (len(records) - len(cluster) - 1)
+        resultString += (r1.id + "," + str(avgInnerSim) + "," + str(maxInnerSim) + "," + str(minInnerSim) + "," + str(
+            avgOuterSim) + "," + str(maxOuterSim) + "," + str(minOuterSim) + "\n")
 
     f = open("jaccard.csv", "w")
     f.write(resultString)
