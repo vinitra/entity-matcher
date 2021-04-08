@@ -63,7 +63,6 @@ def run_pipeline(data, dataset_id, params):
         if len(block) > 1:
             # filter data based on the instance_id's presented in the block
             block_df = data[data['instance_id'].isin(block)]
-
             clusters_l = cls.run(block_df)
 
             for c in clusters_l:
@@ -98,6 +97,7 @@ def main(datasets, evaluate=False, store=True):
     if store:
         output.to_csv(os.path.join(DATA_PATH, 'output.csv'), index=False)
 
+    scores = dict()
     if evaluate:
         # run performance evaluation
         scores = get_scores(actual=actual_pairs, pred=output)
@@ -105,14 +105,25 @@ def main(datasets, evaluate=False, store=True):
         print('Recall: {:.3f}'.format(scores['recall_score']))
         print('F1 score: {:.3f}'.format(scores['f1_score']))
 
+    return scores
+
 
 if __name__ == '__main__':
     datasets_ids = [1, 2, 3, 4]
     hyperparams = {
-        "clusters": [2, 5, 10],
-    }
-    pipeline_args = {
-        "clusters": 2
+        "clusters": [2, 4, 6, 8, 10],
     }
 
-    main(datasets_ids, evaluate=True)
+    res = list()
+    for cluster_n in hyperparams['clusters']:
+        print('-' * 50)
+        print("\nRunning for cluster number: {}".format(cluster_n))
+        pipeline_args = {
+            "clusters": cluster_n
+        }
+        eval_scores = main(datasets_ids, evaluate=True)
+        eval_scores['cluster_n'] = cluster_n
+        eval_scores['confusion_matrix'] = ''
+        res.append(eval_scores)
+
+    pd.DataFrame(res).to_csv('hyper_param_res', index=False)

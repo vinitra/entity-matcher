@@ -27,24 +27,29 @@ class Clustering:
         :param data: pd.DataFrame, subset of the data which belong to a specific block
         :return: list, of lists with the clusters
         """
-        # title encoding
-        sentences = data.title
-        sentence_embeddings = self.model(sentences)
-        embeddings_array = sentence_embeddings.numpy()
+        if len(data) >= self.cluster_n:
+            # title encoding
+            sentences = data.title
+            sentence_embeddings = self.model(sentences)
+            embeddings_array = sentence_embeddings.numpy()
 
-        # instantiate and fit clustering model
-        kmeans = KMeans(n_clusters=self.cluster_n).fit(embeddings_array)
+            # instantiate and fit clustering model
+            kmeans = KMeans(n_clusters=self.cluster_n).fit(embeddings_array)
 
-        # get cluster assignments
-        clustering_res = pd.DataFrame()
-        clustering_res['instance_id'] = data.instance_id
-        clustering_res['cluster_labels'] = kmeans.labels_
-        clustering_res_l = clustering_res.groupby('cluster_labels', as_index=False).agg(list)
+            # get cluster assignments
+            clustering_res = pd.DataFrame()
+            clustering_res['instance_id'] = data.instance_id
+            clustering_res['cluster_labels'] = kmeans.labels_
+            clustering_res_l = clustering_res.groupby('cluster_labels', as_index=False).agg(list)
 
-        return clustering_res_l['instance_id'].tolist()
+            return clustering_res_l['instance_id'].tolist()
+
+        # if less samples that clusters, return one cluster with all the samples
+        else:
+            return data['instance_id'].tolist()
 
     @staticmethod
-    def __import_sentence_encoder():
+    def __import_sentence_encoder(verbose=False):
         """
         Loads universal sentence encoder
         :return: tf.model
@@ -54,6 +59,6 @@ class Clustering:
             model_path = "https://tfhub.dev/google/universal-sentence-encoder/4"
 
         model = hub.load(model_path)
-        print("Model %s loaded" % model_path)
+        print("Model %s loaded" % model_path) if verbose else ''
 
         return model
