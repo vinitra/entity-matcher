@@ -107,7 +107,7 @@ def main(datasets, evaluate=False, store=True):
 
 
 if __name__ == '__main__':
-    datasets_ids = [1, 2, 3, 4]
+    datasets_ids = [2, 3, 4]
     hyperparams = {
         "clusters": [2, 5, 10],
     }

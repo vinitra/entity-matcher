@@ -5,6 +5,7 @@ from config import DATA_PATH, ROOT_DIR
 import tensorflow_hub as hub
 from sklearn.cluster import KMeans
 from sklearn.cluster import MeanShift
+from sentence_transformers import SentenceTransformer
 import pandas as pd
 import os
 
@@ -18,7 +19,11 @@ class Clustering:
         """
         self.method = kwargs.get("clustering_method", 'kmeans')
         self.cluster_n = kwargs.get("cluster_n", 0)
-        self.model = self.__import_sentence_encoder()
+        self.model_type = kwargs.get("model_type", 'USE')
+        if self.model_type == "USE":
+            self.use_model = self.__import_universal_sentence_encoder()
+        elif self.model_type == "BERT":
+            self.bert_model = self.__import_bert_sentence_encoder()
 
     def run(self, data):
         """
@@ -28,9 +33,14 @@ class Clustering:
         :return: list, of lists with the clusters
         """
         # title encoding
-        sentences = data.title
-        sentence_embeddings = self.model(sentences)
-        embeddings_array = sentence_embeddings.numpy()
+        if self.model_type == "USE":
+            # Universal Sentence Encoder Model
+            sentences = data.title
+            sentence_embeddings = self.use_model(sentences)
+            embeddings_array = sentence_embeddings.numpy()
+        elif self.model_type == "BERT":
+            sentences = data.title.tolist()
+            embeddings_array = self.bert_model.encode(sentences)
 
         # instantiate and fit clustering model
         kmeans = KMeans(n_clusters=self.cluster_n).fit(embeddings_array)
@@ -44,7 +54,7 @@ class Clustering:
         return clustering_res_l['instance_id'].tolist()
 
     @staticmethod
-    def __import_sentence_encoder():
+    def __import_universal_sentence_encoder():
         """
         Loads universal sentence encoder
         :return: tf.model
@@ -55,5 +65,16 @@ class Clustering:
 
         model = hub.load(model_path)
         print("Model %s loaded" % model_path)
+
+        return model
+
+    @staticmethod
+    def __import_bert_sentence_encoder():
+        """
+        Loads SentenceBERT encoder
+        :return: tf.model
+        """
+        model = SentenceTransformer('bert-base-nli-mean-tokens')
+        print("Model %s loaded" % model)
 
         return model
