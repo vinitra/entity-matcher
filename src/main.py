@@ -33,7 +33,7 @@ def create_pairs(groups):
     return pd.DataFrame(data=pairs_pred)
 
 
-def run_pipeline(data, dataset_id, **kwargs):
+def run_pipeline(data, **kwargs):
     """
     It performs the basic logic pipeline for getting the data, creates blocking and clustering
     and stores the matching pairs.
@@ -43,9 +43,9 @@ def run_pipeline(data, dataset_id, **kwargs):
     :return: pd.DataFrame, with the predicted matching pairs
     """
     # blocking
-    if dataset_id in [1, 2, 3]:  # Instantiate correct blocker based on dataset
+    if 'title' in data.columns:  # Instantiate correct blocker based on dataset
         blocker = X2Blocker()
-    elif dataset_id == 4:
+    elif 'name' in data.columns:
         blocker = X4Blocker()
     else:
         raise ValueError("Please add a valid dataset id")
@@ -94,7 +94,7 @@ def main(datasets, evaluate=False, store=True, **kwargs):
         data = dl.load_data(ds)
         print("\nRunning for dataset {}".format(ds))
         cluster_n = kwargs.get('cluster_num', 0)
-        outputs.append(run_pipeline(data=data, dataset_id=ds,
+        outputs.append(run_pipeline(data=data,
                                     clustering_method=kwargs['clustering_method'],
                                     cluster_num=cluster_n))
 

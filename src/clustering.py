@@ -63,7 +63,7 @@ class Clustering:
 
     def __run_cosine(self, data):
         # title encoding
-        embeddings_array = get_embeddings(sentences)
+        embeddings_array = __get_encodings(sentences)
 
         # calculate cosine similarity score among data samples
         cosine_matrix = cosine_similarity(embeddings_array)
