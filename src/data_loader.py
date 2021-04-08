@@ -30,4 +30,4 @@ class DataLoader:
         self.datasets_loaded.append(data)
         self.actual_pairs_loaded.append(pairs_raw)
 
-        return data
+        return data, pairs_raw

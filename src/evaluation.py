@@ -40,8 +40,8 @@ def get_scores(actual, pred):
 
     # compute scores
     return {
-        'confusion_matrix': confusion_matrix(y_true=y_true, y_pred=y_pred),
-        'precision_score': precision_score(y_true=y_true, y_pred=y_pred),
-        'recall_score': recall_score(y_true=y_true, y_pred=y_pred),
-        'f1_score': f1_score(y_true=y_true, y_pred=y_pred),
+        # 'confusion_matrix': confusion_matrix(y_true=y_true, y_pred=y_pred),
+        'precision_score': round(precision_score(y_true=y_true, y_pred=y_pred), 3),
+        'recall_score': round(recall_score(y_true=y_true, y_pred=y_pred), 3),
+        'f1_score': round(f1_score(y_true=y_true, y_pred=y_pred), 3),
     }
