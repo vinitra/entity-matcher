@@ -5,6 +5,7 @@ from config import DATA_PATH, ROOT_DIR
 import tensorflow_hub as hub
 from sklearn.cluster import KMeans
 from sklearn.cluster import MeanShift
+from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 import os
 
@@ -16,8 +17,9 @@ class Clustering:
 
         :param cluster_n: int, the number of clusters to produce for each block
         """
-        self.method = kwargs.get("clustering_method", 'kmeans')
-        self.cluster_n = kwargs.get("cluster_n", 0)
+        self.method = kwargs.get('method', 'kmeans')
+        self.cluster_n = kwargs.get('cluster_n', 0)
+        self.threshold = 0.75
         self.model = self.__import_sentence_encoder()
 
     def run(self, data):
@@ -26,6 +28,46 @@ class Clustering:
 
         :param data: pd.DataFrame, subset of the data which belong to a specific block
         :return: list, of lists with the clusters
+        """
+        if self.method == 'kmeans':
+            return self.__run_kmeans(data)
+
+        elif self.method == 'cosine':
+            return self.__run_cosine(data)
+
+        elif self.method == 'jaccard':
+            return self.__run_jaccard(data)
+
+        else:
+            raise ValueError("Please set a valid clustering method between: Kmeans, Jaccard and cosine similarity")
+
+    def __run_cosine(self, data):
+        # title encoding
+        sentences = data.title
+        sentence_embeddings = self.model(sentences)
+        embeddings_array = sentence_embeddings.numpy()
+
+        # calculate cosine similarity score among data samples
+        cosine_matrix = cosine_similarity(embeddings_array)
+        data_samples = data.instance_id.to_list()
+        cosine_df = pd.DataFrame(cosine_matrix)
+
+        pairs = list()
+        for idx, row in cosine_df.iterrows():
+            for col in range(len(data_samples)):
+                # if cosine score above threshold and the score is not referred to the diagonal
+                if row[col] > self.threshold and col != idx:
+                    pair = [data_samples[idx], data_samples[col]]
+                    pairs.append(pair)
+
+        return pairs
+
+    def __run_jaccard(self, data):
+        raise NotImplementedError
+
+    def __run_kmeans(self, data):
+        """
+        Runs kmeans clustering for the input data and returns the list of clusters
         """
         if len(data) >= self.cluster_n:
             # title encoding
