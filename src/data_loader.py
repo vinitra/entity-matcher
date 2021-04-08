@@ -11,6 +11,9 @@ class DataLoader:
         self.data = None
         self.pairs = None
 
+        self.datasets_loaded = list()
+        self.actual_pairs_loaded = list()
+
     def load_data(self, dataset_id):
         """
         It loads the dataset based on the input dataset name.
@@ -28,4 +31,7 @@ class DataLoader:
         self.data = data
         self.pairs = pairs_raw
 
-        return data, pairs_raw
+        self.datasets_loaded.append(data)
+        self.actual_pairs_loaded.append(pairs_raw)
+
+        return data

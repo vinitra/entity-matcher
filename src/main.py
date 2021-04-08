@@ -33,20 +33,15 @@ def create_pairs(groups):
     return pd.DataFrame(data=pairs_pred)
 
 
-def run_pipeline(dataset_id, params, evaluate=False, store=True):
+def run_pipeline(data, dataset_id, params):
     """
     It performs the basic logic pipeline for getting the data, creates blocking and clustering
     and stores the matching pairs.
 
+    :param data: pd.DataFrame, the input dataset
     :param dataset_id: int, the id of the input dataset
-    :param evaluate: bool, run performance evaluation
-    :param store: bool, store output file
     :param params: float, the cutting threshold during entity similarity
     """
-    # load data
-    dl = DataLoader()
-    data, pairs_true = dl.load_data(dataset_id)
-
     # blocking
     if dataset_id in [1, 2, 3]:  # Instantiate correct blocker based on dataset
         blocker = X2Blocker()
@@ -77,34 +72,47 @@ def run_pipeline(dataset_id, params, evaluate=False, store=True):
     # create pairs from clusters
     pairs_pred_df = create_pairs(clusters)
 
+    return pairs_pred_df
+
+
+def main(datasets, evaluate=False, store=True):
+    """
+
+    :param datasets:
+    :param evaluate:
+    :param store:
+    :return:
+    """
+    outputs = list()
+
+    dl = DataLoader()
+    for ds in datasets:
+        # load data
+        data = dl.load_data(ds)
+        print("\nRunning for dataset {}".format(ds))
+        outputs.append(run_pipeline(data=data, dataset_id=ds, params=pipeline_args))
+
+    output = pd.concat(outputs, ignore_index=True)
+    actual_pairs = pd.concat(dl.actual_pairs_loaded, ignore_index=True)
+
+    if store:
+        output.to_csv(os.path.join(DATA_PATH, 'output.csv'), index=False)
+
     if evaluate:
         # run performance evaluation
-        scores = get_scores(actual=pairs_true, pred=pairs_pred_df)
+        scores = get_scores(actual=actual_pairs, pred=output)
         print('Precision: {:.3f}'.format(scores['precision_score']))
         print('Recall: {:.3f}'.format(scores['recall_score']))
         print('F1 score: {:.3f}'.format(scores['f1_score']))
 
-    return pairs_pred_df
-
-
-def main(datasets):
-    """
-
-    :param datasets:
-    :return:
-    """
-    outputs = list()
-    for ds in datasets:
-        print("\nRunning for dataset {}".format(ds))
-        outputs.append(run_pipeline(dataset_id=ds, params=pipeline_args, evaluate=True))
-
-    output = pd.concat(outputs, ignore_index=True)
-    output.to_csv(os.path.join(DATA_PATH, 'output.csv'), index=False)
-
 
 if __name__ == '__main__':
     datasets_ids = [1, 2, 3, 4]
+    hyperparams = {
+        "clusters": [2, 5, 10],
+    }
     pipeline_args = {
         "clusters": 2
     }
-    main(datasets_ids)
+
+    main(datasets_ids, evaluate=True)
