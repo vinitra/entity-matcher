@@ -9,32 +9,39 @@ class Record:
     """
     Data structure representing record titles.
     """
-    def __init__(self, rid, rtitle, rblockingKey):
+    def __init__(self, rid, rtitle, rblockingKey, rtokenized=None):
         self.id = rid
         self.title = rtitle
         self.blockingKey = rblockingKey
+        self.tokenized = rtokenized
 
-def read_file():
+def read_file(blocked_table=None):
     """
     Read records from file preprocessed with blocking keys.
     """
-    with open(blocking_file) as f:
-        content = f.readlines()
+    if blocked_table:
         records = []
-        firstLine = True
-        for line in content:
-            if (firstLine):
-                firstLine = False
-                continue
-            attrs = line.split(",")
-            id = attrs[1]
-            title = attrs[14]
-            #some times we have "\n" at the end of the blocking key
-            blockingKey = attrs[17]
-            blockingKey = blockingKey.split("\n")[0]
+        for id, title, blockingKey in blocked_table.items:
             rec = Record(id, title, blockingKey)
-            #print(rec.id + rec.blockingKey)
             records.append(rec)
+    else:
+        with open(blocking_file) as f:
+            content = f.readlines()
+            records = []
+            firstLine = True
+            for line in content:
+                if (firstLine):
+                    firstLine = False
+                    continue
+                attrs = line.split(",")
+                id = attrs[1]
+                title = attrs[14]
+                #some times we have "\n" at the end of the blocking key
+                blockingKey = attrs[17]
+                blockingKey = blockingKey.split("\n")[0]
+                rec = Record(id, title, blockingKey)
+                #print(rec.id + rec.blockingKey)
+                records.append(rec)
     return records
 
 # encoder-based similarity functions
@@ -45,19 +52,13 @@ def cosine_similarity(r1_encoded, r2_encoded):
     """
     return np.dot(r1_encoded, r2_encoded) / (np.linalg.norm(r1_encoded) * np.linalg.norm(r2_encoded))
 
-def calculate_encoding(r1, r2):
+def calculate_encoding(r1_id, r2_id, r1_encoded,r2_encoded):
     """
     Encode row titles and calculate cosine distance between encodings.
     """
-    if not model:
-        model = prepare_encoder()
-
     # distance between the same row is 0
-    if r1.id == r2.id:
+    if r1_id == r2_id:
         return 0
-
-    r1_encoded = model([r1.title])[0]
-    r2_encoded = model([r2.title])[0]
     sim = cosine(r1_encoded, r2_encoded)
     return sim
 
@@ -70,7 +71,15 @@ def prepare_encoder():
     print ("module %s loaded" % module_url)
     return model
 
-def generate_similarity_table(distance_metric="jaccard"):
+def prepare_records(records):
+    if not model:
+        model = prepare_encoder()
+
+    for r in records:
+        r.tokenized = model([r.title])[0]
+    return records
+
+def generate_similarity_table(blocking_table, distance_metric="jaccard"):
     """
     Generate table of similarities based on distance_metric.
 
@@ -82,7 +91,7 @@ def generate_similarity_table(distance_metric="jaccard"):
     r4 |  0.1 |  0.3 |  0.1 |   0  ...
     ...
     """
-    records = read_file()
+    records = read_file(blocking_table)
     distance_function = None
     distance_table = []
     titles = []
@@ -94,10 +103,11 @@ def generate_similarity_table(distance_metric="jaccard"):
         raise Exception('distance_metric should be either "jaccard" \
             or "encoding" to use the generate_similarity_table function.')
 
+    records = prepare_records(records)
     for r1 in records:
         for r2 in records:
             distance_row = []
-            distance = distance_function(r1, r2)
+            distance = distance_function(r1_id, r2_id, r1, r2)
             distance_row.append(distance)
         distance_table.append(distance_row)
         titles.append(r1.rtitle)

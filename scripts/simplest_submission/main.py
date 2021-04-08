@@ -6,8 +6,10 @@ data = []
 for file in x_files:
     # x1 = pd.read_csv('X1.csv')
     x = pd.read_csv(file)
-    datapoint = [x.instance_id[0], x.instance_id[1]]
-    data.append(datapoint)
+
+    for i in range(200):
+        datapoint = [x.instance_id[i], x.instance_id[i+1]]
+        data.append(datapoint)
 
 print(data)
 pairs_df = pd.DataFrame(data=data, columns=['left_instance_id', 'right_instance_id'])
