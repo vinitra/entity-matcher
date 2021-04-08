@@ -47,6 +47,7 @@ def run_pipeline(data, **kwargs):
         blocker = X2Blocker()
     elif 'name' in data.columns:
         blocker = X4Blocker()
+        data["title"] = data["name"]
     else:
         raise ValueError("Please add a valid dataset id")
 
@@ -117,8 +118,10 @@ def main(datasets, evaluate=False, store=True, **kwargs):
 
 if __name__ == '__main__':
     datasets_ids = [2, 3, 4]
-    clusters_nums = [2, 4, 6, 8, 10]
-    clustering_step = ['cosine', 'kmeans', 'jaccard']
+    # clusters_nums = [2, 4, 6, 8, 10]
+    # clustering_step = ['cosine', 'kmeans', 'jaccard']
+    clusters_nums = [2]
+    clustering_step = ['kmeans']
 
     res = list()
     for c_method in clustering_step:

@@ -49,7 +49,7 @@ class Clustering:
             raise ValueError("Please set a valid clustering method between: Kmeans, Jaccard and cosine similarity")
 
 
-    def __get_encodings(self, sentences):
+    def __get_embeddings(self, data):
         if self.model_type == "USE":
             # Universal Sentence Encoder Model
             sentences = data.title
@@ -63,11 +63,11 @@ class Clustering:
 
     def __run_cosine(self, data):
         # title encoding
-        embeddings_array = __get_encodings(sentences)
+        embeddings_array = self.__get_embeddings(data)
 
         # calculate cosine similarity score among data samples
         cosine_matrix = cosine_similarity(embeddings_array)
-        data_samples = data.instance_id.to_list()
+        data_samples = data.instance_id.tolist()
         cosine_df = pd.DataFrame(cosine_matrix)
 
         pairs = list()
@@ -89,7 +89,7 @@ class Clustering:
         """
         if len(data) >= self.cluster_n:
             # title encoding
-            embeddings_array = get_embeddings(sentences)
+            embeddings_array = self.__get_embeddings(data)
 
             # instantiate and fit clustering model
             kmeans = KMeans(n_clusters=self.cluster_n).fit(embeddings_array)

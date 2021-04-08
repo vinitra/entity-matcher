@@ -24,10 +24,6 @@ class DataLoader:
         data = pd.read_csv(os.path.join(DATA_PATH, 'X{}.csv'.format(dataset_id)))
         pairs_raw = pd.read_csv(os.path.join(DATA_PATH, 'Y{}.csv'.format(dataset_id)))
 
-        # keep only relevant column
-        if dataset_id == 4:
-            data["title"] = data["name"]
-
         self.data = data
         self.pairs = pairs_raw
 
