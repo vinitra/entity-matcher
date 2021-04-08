@@ -50,6 +50,9 @@ class Clustering:
         :return: tf.model
         """
         model_path = os.path.join(ROOT_DIR, 'models', 'universal-sentence-encoder_4')
+        if not os.path.exists(model_path):
+            model_path = "https://tfhub.dev/google/universal-sentence-encoder/4"
+
         model = hub.load(model_path)
         print("Model %s loaded" % model_path)
 
