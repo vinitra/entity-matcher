@@ -64,7 +64,7 @@ def run_pipeline(data, y, dataset_id, evaluate=False, verbose=False, **kwargs):
     clusters = list()
     cluster_n = kwargs.get('cluster_num', 0)
     method = kwargs.get('clustering_method', 'kmeans')
-    encoding = kwargs.get('encoding', None)
+    encoding = kwargs.get('encoding', 'use')
 
     cls = Clustering(method=method, cluster_n=cluster_n, encoding=encoding)
     for block in blocks:

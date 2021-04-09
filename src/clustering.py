@@ -20,7 +20,7 @@ class Clustering:
         """
         self.method = kwargs.get("clustering_method", 'kmeans')
         self.cluster_n = kwargs.get("cluster_n", 0)
-        self.encoding = kwargs.get('encoding', None)
+        self.encoding = kwargs.get('encoding', 'use')
 
         if self.encoding == 'use':
             self.use_model = self.__import_universal_sentence_encoder()
@@ -51,19 +51,16 @@ class Clustering:
             raise ValueError("Please set a valid clustering method between: Kmeans, Jaccard and cosine similarity")
 
     def __get_embeddings(self, data):
-
         if self.encoding == 'use':
             # Universal Sentence Encoder Model
             sentences = data.title
             sentence_embeddings = self.use_model(sentences)
             embeddings_array = sentence_embeddings.numpy()
-            return embeddings_array
-
         elif self.encoding == 'bert':
             # sentence BERT encoder model
             sentences = data.title.tolist()
             embeddings_array = self.bert_model.encode(sentences)
-            return embeddings_array
+        return embeddings_array
 
     def __run_cosine(self, data):
         """
@@ -99,6 +96,8 @@ class Clustering:
         if len(data) >= self.cluster_n:
             # title encoding
             embeddings_array = self.__get_embeddings(data)
+
+            print(len(embeddings_array), embeddings_array)
 
             # instantiate and fit clustering model
             kmeans = KMeans(n_clusters=self.cluster_n).fit(embeddings_array)
