@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-# Created by romanou at 08.04.21
-
 """
 Module description
 """

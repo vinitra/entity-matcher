@@ -12,9 +12,8 @@ from pipeline import main
 
 if __name__ == '__main__':
     dataset_ids = [1, 2, 3, 4]
-    clusters_nums = [2, 4, 6, 8, 10]
-    # clustering_step = ['cosine', 'kmeans', 'jaccard']
-    clustering_step = ['cosine', 'kmeans']
+    clusters_nums = [2, 5, 10]
+    clustering_step = ['cosine', 'kmeans', 'jaccard']
     encodings = ['bert', 'use']
 
     scores_to_store = list()

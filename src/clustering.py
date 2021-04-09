@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 from config import DATA_PATH, ROOT_DIR
+from similarity import calc_jac_titles
 
 import tensorflow_hub as hub
 from sklearn.cluster import KMeans
-from sklearn.cluster import MeanShift
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
@@ -56,11 +56,13 @@ class Clustering:
             sentences = data.title
             sentence_embeddings = self.use_model(sentences)
             embeddings_array = sentence_embeddings.numpy()
+            return embeddings_array
+
         elif self.encoding == 'bert':
             # sentence BERT encoder model
             sentences = data.title.tolist()
             embeddings_array = self.bert_model.encode(sentences)
-        return embeddings_array
+            return embeddings_array
 
     def __run_cosine(self, data):
         """
@@ -86,8 +88,29 @@ class Clustering:
 
         return pairs
 
-    def __run_jaccard(self, data):
-        raise NotImplementedError
+    def __run_jaccard(self, data_cp):
+        # tokenize title
+        data = data_cp.copy()
+        data['tokenized_title'] = data['title'].apply(lambda x: x.replace("/", " ").split())
+
+        # calculate jaccard similarity score among data samples
+        pairs = list()
+        for idx1, row1 in data.iterrows():
+            for idx2, row2 in data.iterrows():
+                score = 0
+                # if cosine score above threshold and the score is not referred to the diagonal
+                if idx1 != idx2:
+                    tokenized_title1 = row1['tokenized_title']
+                    tokenized_title2 = row2['tokenized_title']
+                    if len(tokenized_title1) > len(tokenized_title2):
+                        score = calc_jac_titles(tokenized_title1, tokenized_title2)
+                    else:
+                        score = calc_jac_titles(tokenized_title2, tokenized_title1)
+
+                if score > self.threshold:
+                    pair = [row1['instance_id'], row2['instance_id']]
+                    pairs.append(pair)
+        return pairs
 
     def __run_kmeans(self, data):
         """
