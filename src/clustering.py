@@ -97,8 +97,6 @@ class Clustering:
             # title encoding
             embeddings_array = self.__get_embeddings(data)
 
-            print(len(embeddings_array), embeddings_array)
-
             # instantiate and fit clustering model
             kmeans = KMeans(n_clusters=self.cluster_n).fit(embeddings_array)
 
