@@ -37,9 +37,6 @@ class X2Blocker(Blocker):
         # aliasing as df to be precise
         df = data
 
-        # Store reference
-        self.df = df
-
         df.fillna('', inplace=True)
         df = df.applymap(lambda x: str(x).lower().strip())
 
@@ -173,9 +170,9 @@ class X2Blocker(Blocker):
             elif brand == "dell":
                 if "inspiron" in tokens:
                     model = "inspiron"
-            if model == " " or model == "thinkpad" or model == "aspire":
-                #print("\nI did not find the model of this line")
-                #print(self.df['preprocessed_titles'].iloc[index])
+            # if model == " " or model == "thinkpad" or model == "aspire":
+                # print("\nI did not find the model of this line")
+                # print(self.df['preprocessed_titles'].iloc[index])
             model_col.append(model)
         return model_col
 
