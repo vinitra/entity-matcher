@@ -5,7 +5,7 @@ from similarity import calc_jac_titles
 
 import tensorflow_hub as hub
 from sklearn.cluster import KMeans
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 import os
@@ -24,8 +24,8 @@ class Clustering:
 
         if self.encoding == 'use':
             self.use_model = self.__import_universal_sentence_encoder()
-        elif self.encoding == 'bert':
-            self.bert_model = self.__import_bert_sentence_encoder()
+        # elif self.encoding == 'bert':
+        #     self.bert_model = self.__import_bert_sentence_encoder()
 
         self.method = kwargs.get('method', 'kmeans')
         self.cluster_n = kwargs.get('cluster_n', 0)
@@ -58,11 +58,11 @@ class Clustering:
             embeddings_array = sentence_embeddings.numpy()
             return embeddings_array
 
-        elif self.encoding == 'bert':
-            # sentence BERT encoder model
-            sentences = data.title.tolist()
-            embeddings_array = self.bert_model.encode(sentences)
-            return embeddings_array
+        # elif self.encoding == 'bert':
+        #     # sentence BERT encoder model
+        #     sentences = data.title.tolist()
+        #     embeddings_array = self.bert_model.encode(sentences)
+        #     return embeddings_array
 
     def __run_cosine(self, data):
         """
@@ -150,13 +150,13 @@ class Clustering:
 
         return model
 
-    @staticmethod
-    def __import_bert_sentence_encoder(verbose=False):
-        """
-        Loads SentenceBERT encoder
-        :return: tf.model
-        """
-        model = SentenceTransformer('bert-base-nli-mean-tokens')
-        print("Model %s loaded" % model) if verbose else ''
-
-        return model
+    # @staticmethod
+    # def __import_bert_sentence_encoder(verbose=False):
+    #     """
+    #     Loads SentenceBERT encoder
+    #     :return: tf.model
+    #     """
+    #     model = SentenceTransformer('bert-base-nli-mean-tokens')
+    #     print("Model %s loaded" % model) if verbose else ''
+    #
+    #     return model
