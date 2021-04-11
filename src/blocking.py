@@ -188,11 +188,11 @@ class X2Blocker(Blocker):
             for tokenIndex in range(len(ram_tokens)):
                 if ram_tokens[tokenIndex].endswith("gb"):
                     if ram_tokens[tokenIndex] == "gb":
-                        ram_t = int(ram_tokens[tokenIndex-1])
+                        ram_t = float(ram_tokens[tokenIndex-1])
                         if ram_t < ram:
                             ram = ram_t
                     else:
-                        ram_t = int(ram_tokens[tokenIndex][0:-2])
+                        ram_t = float(ram_tokens[tokenIndex][0:-2])
                         if ram_t < ram:
                             ram = ram_t
 
@@ -200,11 +200,11 @@ class X2Blocker(Blocker):
                 for tokenIndex in range(len(title_tokens)):
                     if title_tokens[tokenIndex].endswith("gb") and (title_tokens[tokenIndex+1].startswith("ddr") or title_tokens[tokenIndex+1] == "ram" or title_tokens[tokenIndex+1] == "memory") :
                         if title_tokens[tokenIndex] == "gb":
-                            ram_t = int(title_tokens[tokenIndex-1])
+                            ram_t = float(title_tokens[tokenIndex-1])
                             if ram_t < ram:
                                 ram = ram_t
                         else:
-                            ram_t = int(title_tokens[tokenIndex][0:-2])
+                            ram_t = float(title_tokens[tokenIndex][0:-2])
                             if ram_t < ram:
                                 ram = ram_t
                         break
