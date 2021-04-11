@@ -49,4 +49,4 @@ if __name__ == '__main__':
                                    encoding=text_encoding)
                 scores_to_store += eval_scores
 
-    pd.DataFrame(scores_to_store).to_csv('hyper_param_res', index=False)
+    pd.DataFrame(scores_to_store).to_csv('hyper_param_res.csv', index=False)
