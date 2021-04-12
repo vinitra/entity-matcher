@@ -23,7 +23,7 @@ class X2Blocker(Blocker):
 
     def __init__(self):
         super().__init__()
-        self.processors = ['core i3', 'core i5', 'core i7', 'intel', 'amd']
+        self.processors = ['i3', 'i5', 'i7', 'core 2', 'duo', 'dual', 'celeron', 'intel', 'amd']
         self.brands = ['lenovo', 'acer', 'asus', 'hp', 'dell']
         self.df = None
 
@@ -78,6 +78,8 @@ class X2Blocker(Blocker):
 
     @staticmethod
     def find_amd_model(tokens):
+        if "64" in tokens and "x2" in tokens:
+            return "64 x2"
         for token in tokens:
             if (token.startswith("a-") or token.startswith("e-") or
                 token.startswith("a4-") or token.startswith("a8")) and \
@@ -90,7 +92,13 @@ class X2Blocker(Blocker):
         for p in self.processors:
             if p in cpu_val:
                 cpu = p
-                break
+                if cpu != "intel":
+                    break
+
+        if cpu == "duo" or cpu == "dual":
+            cpu = "core 2"
+        elif cpu == "intel i7":
+            cpu = "core i7"
 
         # if amd find which specific amd
         if cpu == "amd":
@@ -116,7 +124,7 @@ class X2Blocker(Blocker):
 
     def __extract_model(self, brand, title):
         tokens_title = self.tokenize(title)
-        model = " "
+        model = ""
 
         # Lenovo
         if brand == "lenovo":
@@ -128,11 +136,16 @@ class X2Blocker(Blocker):
                 flag = False
                 for token in tokens_title:
                     if token.startswith("23"):
-                        model = model + " " + token
+                        model = model + " " + token[0:4]
                         flag = True
                         break
                 if "tablet" in tokens_title and "3435" in tokens_title and not flag:
                     model = model + " 2320"
+            elif model == "x1":
+                for token in tokens_title:
+                    if token.startswith("34"):
+                        model = model + " " + token[0:4]
+                        break
             for token in tokens_title:
                 if token.endswith("0m") and token.startswith("3"):
                     model = model + " " + token[0:4]
@@ -141,13 +154,24 @@ class X2Blocker(Blocker):
         elif brand == "acer":
             if "aspire" in tokens_title:
                 model = "aspire"
-                for token in tokens_title:
-                    if token.startswith("e3") or token.startswith("e5") or token.startswith("e1"):
-                        model = model + " " + token[0:6]
+                for tokenIndex in range(len(tokens_title)):
+                    token = tokens_title[tokenIndex]
+                    if token.startswith("e3") or token.startswith("e5") or token.startswith("s7") or \
+                            token.startswith("r7") or token.startswith("e1") or token.startswith("m5") or \
+                            (token.startswith("as") and token != "aspire"):
+                        if len(token) == 2:
+                            model = model + " " + token + "-" + tokens_title[tokenIndex+1][0:3]
+                        else:
+                            model = model + " " + token[0:6]
                         break
                     elif token.startswith("v7") or token.startswith("v5") or token.startswith("v3"):
                         model = model + " " + token[0:2]
                         break
+                    elif token.startswith("5742"):
+                        model = model + " 5742"
+                        break
+            elif "extensa" in tokens_title:
+                model = "extensa"
         # Asus
         elif brand == "asus":
             for token in tokens_title:
@@ -156,17 +180,33 @@ class X2Blocker(Blocker):
                     break
         # HP
         elif brand == "hp":
-            if "elitebook" in tokens_title:
-                model = "elitebook"
-                for token in tokens_title:
-                    if token.endswith("0p") or token.endswith("0m") or token == "g1" or token == "g2":
-                        model = "elitebook " + token
-                        break
+            if "folio" in tokens_title:
+                model = "folio"
             else:
                 for token in tokens_title:
-                    if token.startswith("15-") and token != "15-series":
+                    if token.endswith("0p") or token.endswith("0m") or token.endswith("0w") \
+                            or token == "g1" or token == "g2":
                         model = token
                         break
+                for token in tokens_title:
+                    if token.startswith("t9") or token.startswith("p8") or token.startswith("nc"):
+                        model = model + " " + token
+                        break
+                    elif token.startswith("dv6") or token.endswith("dx"):
+                        model = token
+                        break
+                if model == "":
+                    for tokenIndex in range(len(tokens_title)):
+                        token = tokens_title[tokenIndex]
+                        if token.startswith("15-") and token != "15-series":
+                            model = token
+                            break
+                        elif token.startswith("15") and tokenIndex+1 < len(tokens_title) and \
+                                (tokens_title[tokenIndex + 1].startswith("g0") or
+                                    tokens_title[tokenIndex + 1].startswith("d0") or
+                                    tokens_title[tokenIndex + 1].startswith("f0")):
+                            model = token + "-" + tokens_title[tokenIndex + 1]
+                            break
         # Dell
         elif brand == "dell":
             if "inspiron" in tokens_title:
