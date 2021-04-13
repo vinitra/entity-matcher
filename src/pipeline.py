@@ -63,10 +63,11 @@ def run_pipeline(data, y, dataset_id, evaluate=False, verbose=False, **kwargs):
     # apply clustering for each block to get matching pairs
     clusters = list()
     cluster_n = kwargs.get('cluster_num', 0)
+    distance_threshold = kwargs.get('distance_threshold', 0)
     method = kwargs.get('clustering_method', 'kmeans')
     encoding = kwargs.get('encoding', 'use')
 
-    cls = Clustering(method=method, cluster_n=cluster_n, encoding=encoding)
+    cls = Clustering(method=method, cluster_n=cluster_n, distance_threshold=distance_threshold, encoding=encoding)
     for block in blocks:
         if len(block) > 1:
             # filter data based on the instance_id's presented in the block
@@ -110,9 +111,11 @@ def main(datasets, evaluate=False, store=True, verbose=False, **kwargs):
     scores = list()
 
     cluster_n = kwargs.get('cluster_num', 0)
+    distance_threshold = kwargs.get('distance_threshold', 1.5)
     clustering_method = kwargs['clustering_method']
     encoding = kwargs.get('encoding', None)
 
+    print('\n=== Pipeline === ')
     dl = DataLoader()
     for ds in datasets:
         # load data
@@ -123,6 +126,7 @@ def main(datasets, evaluate=False, store=True, verbose=False, **kwargs):
                                                        y=y,
                                                        clustering_method=clustering_method,
                                                        cluster_num=cluster_n,
+                                                       distance_threshold=distance_threshold,
                                                        evaluate=True,
                                                        encoding=encoding)
         outputs.append(predicted_pairs)
@@ -137,9 +141,11 @@ def main(datasets, evaluate=False, store=True, verbose=False, **kwargs):
     if evaluate:
         # run performance evaluation
         global_scores = get_scores(actual=actual_pairs, pred=output)
-        print('Precision: {:.3f}'.format(global_scores['precision_score'])) if verbose else ''
-        print('Recall: {:.3f}'.format(global_scores['recall_score'])) if verbose else ''
-        print('F1 score: {:.3f}'.format(global_scores['f1_score'])) if verbose else ''
+        if verbose:
+            print('\n=== Evaluation === ')
+            print('Precision: {:.3f}'.format(global_scores['precision_score']))
+            print('Recall: {:.3f}'.format(global_scores['recall_score']))
+            print('F1 score: {:.3f}'.format(global_scores['f1_score']), '\n')
 
         global_scores['cluster_n'] = cluster_n
         global_scores['method'] = clustering_method

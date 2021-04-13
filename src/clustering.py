@@ -4,7 +4,7 @@ from config import DATA_PATH, ROOT_DIR
 from similarity import calc_jac_titles
 
 import tensorflow_hub as hub
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, AgglomerativeClustering, Birch
 # from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
@@ -20,6 +20,7 @@ class Clustering:
         """
         self.method = kwargs.get("clustering_method", 'kmeans')
         self.cluster_n = kwargs.get("cluster_n", 0)
+        self.distance_threshold = kwargs.get("distance_threshold", 0)
         self.encoding = kwargs.get('encoding', 'use')
 
         if self.encoding == 'use':
@@ -40,6 +41,12 @@ class Clustering:
         """
         if self.method == 'kmeans':
             return self.__run_kmeans(data)
+
+        elif self.method == 'agglomerative':
+            return self.__run_agglomerative_clustering(data)
+
+        elif self.method == 'birch':
+            return self.__run_birch(data)
 
         elif self.method == 'cosine':
             return self.__run_cosine(data)
@@ -134,6 +141,49 @@ class Clustering:
         # if less samples that clusters, return one cluster with all the samples
         else:
             return data['instance_id'].tolist()
+
+    def __run_agglomerative_clustering(self, data):
+        """
+        Runs agglomerative clustering for the input data and returns the list of clusters
+        """
+        # title encoding
+        embeddings_array = self.__get_embeddings(data)
+
+        # instantiate and fit clustering model
+        agg_clusters = AgglomerativeClustering(n_clusters=None, distance_threshold=self.distance_threshold).fit(embeddings_array)
+
+        # get cluster assignments
+        clustering_res = pd.DataFrame()
+        clustering_res['instance_id'] = data.instance_id
+        clustering_res['cluster_labels'] = agg_clusters.labels_
+        clustering_res_l = clustering_res.groupby('cluster_labels', as_index=False).agg(list)
+
+        return clustering_res_l['instance_id'].tolist()
+
+
+    def __run_birch(self, data):
+        """
+        Runs birch for the input data and returns the list of clusters
+        """
+        if len(data) >= self.cluster_n:
+            # title encoding
+            embeddings_array = self.__get_embeddings(data)
+
+            # instantiate and fit clustering model
+            kmeans = Birch(n_clusters=self.cluster_n).fit(embeddings_array)
+
+            # get cluster assignments
+            clustering_res = pd.DataFrame()
+            clustering_res['instance_id'] = data.instance_id
+            clustering_res['cluster_labels'] = kmeans.labels_
+            clustering_res_l = clustering_res.groupby('cluster_labels', as_index=False).agg(list)
+
+            return clustering_res_l['instance_id'].tolist()
+
+        # if less samples that clusters, return one cluster with all the samples
+        else:
+            return data['instance_id'].tolist()
+
 
     @staticmethod
     def __import_universal_sentence_encoder(verbose=False):

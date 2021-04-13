@@ -13,7 +13,8 @@ from pipeline import main
 if __name__ == '__main__':
     dataset_ids = [1, 2, 3, 4]
     clusters_nums = [2, 5, 10]
-    clustering_step = ['cosine', 'kmeans', 'jaccard']
+    distance_thresholds = [0.5, 0.8, 1, 1.25, 1.5, 1.75, 2, 2.5]
+    clustering_step = ['cosine', 'kmeans', 'jaccard', 'agglomerative', 'birch']
     encodings = ['use']
 
     scores_to_store = list()
@@ -39,6 +40,18 @@ if __name__ == '__main__':
                                clustering_method=c_method)
             scores_to_store += eval_scores
 
+        elif c_method == 'agglomerative':
+            for distance_threshold in distance_thresholds:
+                for text_encoding in encodings:
+                    print('-' * 50)
+                    print("\nRunning {} for the clustering step.".format(c_method))
+                    print("Running for cluster number: {}".format(cluster_num))
+                    eval_scores = main(dataset_ids,
+                                       evaluate=True,
+                                       clustering_method=c_method,
+                                       distance_threshold=distance_threshold,
+                                       encoding=text_encoding)
+                    scores_to_store += eval_scores
         else:
             for text_encoding in encodings:
                 print('-' * 50)
