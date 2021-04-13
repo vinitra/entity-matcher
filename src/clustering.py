@@ -170,12 +170,12 @@ class Clustering:
             embeddings_array = self.__get_embeddings(data)
 
             # instantiate and fit clustering model
-            kmeans = Birch(n_clusters=self.cluster_n).fit(embeddings_array)
+            birch = Birch(threshold=0.2, n_clusters=self.cluster_n).fit(embeddings_array)
 
             # get cluster assignments
             clustering_res = pd.DataFrame()
             clustering_res['instance_id'] = data.instance_id
-            clustering_res['cluster_labels'] = kmeans.labels_
+            clustering_res['cluster_labels'] = birch.labels_
             clustering_res_l = clustering_res.groupby('cluster_labels', as_index=False).agg(list)
 
             return clustering_res_l['instance_id'].tolist()

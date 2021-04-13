@@ -33,7 +33,7 @@ def create_pairs(groups):
     return pd.DataFrame(data=pairs_pred)
 
 
-def run_pipeline(data, y, dataset_id, evaluate=False, verbose=False, **kwargs):
+def run_pipeline(data, y, dataset_id, evaluate=False, verbose=False, optimize_method=False, **kwargs):
     """
     It performs the basic logic pipeline for getting the data, creates blocking and clustering
     and stores the matching pairs.
@@ -45,12 +45,22 @@ def run_pipeline(data, y, dataset_id, evaluate=False, verbose=False, **kwargs):
     :param verbose: boolean, if logging
     :return: pd.DataFrame, with the predicted matching pairs
     """
+    cluster_n = kwargs.get('cluster_num', 0)
+    distance_threshold = kwargs.get('distance_threshold', 0)
+    method = kwargs.get('clustering_method', 'agglomerative')
+    encoding = kwargs.get('encoding', 'use')
+
     # blocking
     if 'title' in data.columns:  # Instantiate correct blocker based on dataset
         blocker = X2Blocker()
+        # identify X3
+        if optimize_method and ("source" in data.instance_id[0]):
+            method = 'cosine'
     elif 'name' in data.columns:
         blocker = X4Blocker()
         data["title"] = data["name"]
+        if optimize_method:
+            method = 'birch'
     else:
         raise ValueError("Please add a valid dataset id")
 
@@ -62,11 +72,9 @@ def run_pipeline(data, y, dataset_id, evaluate=False, verbose=False, **kwargs):
 
     # apply clustering for each block to get matching pairs
     clusters = list()
-    cluster_n = kwargs.get('cluster_num', 0)
-    distance_threshold = kwargs.get('distance_threshold', 0)
-    method = kwargs.get('clustering_method', 'kmeans')
-    encoding = kwargs.get('encoding', 'use')
 
+    print("Method: ", method)
+    print("Encoding: ", encoding, "\n")
     cls = Clustering(method=method, cluster_n=cluster_n, distance_threshold=distance_threshold, encoding=encoding)
     for block in blocks:
         if len(block) > 1:
@@ -84,9 +92,10 @@ def run_pipeline(data, y, dataset_id, evaluate=False, verbose=False, **kwargs):
     if evaluate:
         # run performance evaluation
         dataset_scores = get_scores(actual=y, pred=pairs_pred_df)
-        print('Precision: {:.3f}'.format(dataset_scores['precision_score'])) if verbose else ''
-        print('Recall: {:.3f}'.format(dataset_scores['recall_score'])) if verbose else ''
-        print('F1 score: {:.3f}'.format(dataset_scores['f1_score'])) if verbose else ''
+        if verbose:
+            print('Precision: {:.3f}'.format(dataset_scores['precision_score']))
+            print('Recall: {:.3f}'.format(dataset_scores['recall_score']))
+            print('F1 score: {:.3f}'.format(dataset_scores['f1_score']))
 
         dataset_scores['cluster_n'] = cluster_n
         dataset_scores['method'] = method
@@ -114,20 +123,25 @@ def main(datasets, evaluate=False, store=True, verbose=False, **kwargs):
     distance_threshold = kwargs.get('distance_threshold', 1.5)
     clustering_method = kwargs['clustering_method']
     encoding = kwargs.get('encoding', None)
+    optimize_method = kwargs.get('optimize_method', False)
+    verbose = kwargs.get('verbose', True)
+    evaluate = kwargs.get('evaluate', True)
 
     print('\n=== Pipeline === ')
     dl = DataLoader()
     for ds in datasets:
         # load data
         data, y = dl.load_data(ds)
-        print("\nRunning for dataset {}".format(ds))
+        print("\nRunning for dataset {}\n".format(ds))
         predicted_pairs, dataset_scores = run_pipeline(data=data,
                                                        dataset_id=ds,
                                                        y=y,
                                                        clustering_method=clustering_method,
                                                        cluster_num=cluster_n,
                                                        distance_threshold=distance_threshold,
-                                                       evaluate=True,
+                                                       evaluate=evaluate,
+                                                       verbose=verbose,
+                                                       optimize_method=optimize_method,
                                                        encoding=encoding)
         outputs.append(predicted_pairs)
         scores.append(dataset_scores)
