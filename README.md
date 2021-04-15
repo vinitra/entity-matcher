@@ -1,6 +1,7 @@
 ## Project 1: Sigmod contest 2021
 > Team members: Akash DHASADE, Angelika ROMANOU, Vinitra SWAMY, Eleni ZAPRIDOU  
-Task: [Entity Matching](https://dbgroup.ing.unimo.it/sigmod21contest/task.shtml)
+Task: [Entity Matching](https://dbgroup.ing.unimo.it/sigmod21contest/task.shtml)  
+Team: sigmodest  
 
 ### Project Overview
 This project refers to the SIGMOD programming contest 2021.
@@ -8,10 +9,11 @@ The task consists of identifying which instances, described by properties (i.e.,
 Participants are asked to solve the task among several datasets of different types (e.g., products, people, etc.). 
 Each dataset is made of a list of instances (rows) and a list of properties describing them (columns).
 The goal is to find, for each Xi dataset, all pairs of instances that match (i.e., refer to the same real-world entity).  
-For more details, read the official SIGMOD 2021 [task description](https://dbgroup.ing.unimo.it/sigmod21contest/task.shtml).
+  
+For more details, read the [official SIGMOD 2021 task description](https://dbgroup.ing.unimo.it/sigmod21contest/task.shtml).
 
 ### Methodology
-In the following section,the detailed methodology is described. 
+In the following section, we describe our methodology. 
 The implemented pipeline is comprised of two main parts; the blocking and the entity clustering. 
 Blocking tries to minimize the number of comparisons by assigning rows to blocks from the input data based on a specific blocking key scheme.
 Entity clustering examines the rows in each block and distills the entity-matching clusters.
@@ -73,7 +75,7 @@ Main components of the application are:
 
 ### Deployment
 
-Please follow the instruction below to run the app.
+Please follow the instruction below to run the entity matching pipeline.
 
 Create `virtualenv` and install requirements.
 ```bash
