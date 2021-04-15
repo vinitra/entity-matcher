@@ -45,13 +45,24 @@ if __name__ == '__main__':
                 for text_encoding in encodings:
                     print('-' * 50)
                     print("\nRunning {} for the clustering step.".format(c_method))
-                    print("Running for cluster number: {}".format(cluster_num))
                     eval_scores = main(dataset_ids,
                                        evaluate=True,
                                        clustering_method=c_method,
                                        distance_threshold=distance_threshold,
                                        encoding=text_encoding)
                     scores_to_store += eval_scores
+        elif c_method == 'birch':
+            for cluster_num in clusters_nums:
+                for text_encoding in encodings:
+                    print('-' * 50)
+                    print("\nRunning {} for the clustering step with {} encoding.".format(c_method, text_encoding))
+                    eval_scores = main(dataset_ids,
+                                       evaluate=True,
+                                       clustering_method=c_method,
+                                       cluster_num=cluster_num,
+                                       encoding=text_encoding)
+                    scores_to_store += eval_scores
+
         else:
             for text_encoding in encodings:
                 print('-' * 50)

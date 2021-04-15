@@ -43,12 +43,12 @@ We tested all the aforementioned approaches in all the provided datasets. The re
 
 | Model                  | Precision | Recall | F1-score |
 |------------------------|:---------:|:------:|:--------:|
-| Jaccard similarity (threshold: )  | 0.79      | 0.68   | 0.72     |
-| K-means clustering (k: ) with USE embeddings  | 0.80      | 0.69   | 0.72     |
-| Cosine similarity (threshold: ) with USE embeddings  | 0.80      | 0.69   | 0.72     |
-| Birch clustering with USE embeddings  | 0.80      | 0.69   | 0.72     |
-| Agglomerative Clustering (dist = 2) with USE embeddings  | 0.80      | 0.69   | **0.678**     |
-  
+| Jaccard similarity (threshold: 0.75)  | 0.828      | 0.397   | 0.537     |
+| K-means clustering (k: 2) with USE embeddings  | 0.498      | 0.574   | 0.533     |
+| Birch clustering with USE embeddings  | 0.513      | 0.649   | 0.573     |
+| Cosine similarity (threshold: 0.75) with USE embeddings  | 0.666      | 0.657   | 0.661     |
+| Agglomerative Clustering (dist = 2) with USE embeddings  | 0.633      | 0.696   | **0.663**     |
+
  
 After tuning our hyper-parameters, our optimal pipeline involves:
 - Encoder: **Universal Sentence Encoder** (USE)

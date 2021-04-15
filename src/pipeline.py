@@ -101,6 +101,7 @@ def run_pipeline(data, y, dataset_id, evaluate=False, verbose=False, optimize_me
         dataset_scores['method'] = method
         dataset_scores['dataset'] = dataset_id
         dataset_scores['encoding'] = encoding
+        dataset_scores['threshold'] = distance_threshold
 
     return pairs_pred_df, dataset_scores
 
@@ -119,7 +120,7 @@ def main(datasets, evaluate=False, store=True, verbose=False, **kwargs):
     outputs = list()
     scores = list()
 
-    cluster_n = kwargs.get('cluster_num', 0)
+    cluster_n = kwargs.get('cluster_num', 1)
     distance_threshold = kwargs.get('distance_threshold', 1.5)
     clustering_method = kwargs['clustering_method']
     encoding = kwargs.get('encoding', None)
@@ -165,6 +166,7 @@ def main(datasets, evaluate=False, store=True, verbose=False, **kwargs):
         global_scores['method'] = clustering_method
         global_scores['dataset'] = 'all'
         global_scores['encoding'] = encoding
+        global_scores['threshold'] = distance_threshold
 
         scores.append(global_scores)
 

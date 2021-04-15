@@ -19,7 +19,7 @@ class Clustering:
         :param cluster_n: int, the number of clusters to produce for each block
         """
         self.method = kwargs.get("clustering_method", 'kmeans')
-        self.cluster_n = kwargs.get("cluster_n", 0)
+        self.cluster_n = kwargs.get("cluster_n", 1)
         self.distance_threshold = kwargs.get("distance_threshold", 0)
         self.encoding = kwargs.get('encoding', 'use')
 
@@ -159,7 +159,6 @@ class Clustering:
         clustering_res_l = clustering_res.groupby('cluster_labels', as_index=False).agg(list)
 
         return clustering_res_l['instance_id'].tolist()
-
 
     def __run_birch(self, data):
         """
