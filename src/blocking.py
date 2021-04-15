@@ -268,10 +268,137 @@ class X4Blocker(Blocker):
         df = df.applymap(lambda x: str(x).lower().strip())
 
         pattern_string = '( - )|,|:|\(|\)'
-        df["blocking_key"] = df["brand"] + ' ' + df["size"]
+        preprocessed_names = df["name"].replace(pattern_string, ' ', regex=True)
+        df["preprocessed_name"] = preprocessed_names
+        
+        df["model"] = df.apply(lambda x: self.__extract_model(x["brand"], x["size"], x["preprocessed_name"]), axis=1)
+        df["blocking_key"] = df["brand"] + ' ' + df["size"] + ' ' + df["model"]
 
         # Store reference
         self.df = df
+
+    def __find_string_in_tokens(self, model_strings, tokens):
+        for model_string in model_strings:
+            for token in tokens:
+                if(model_string in token):
+                    return model_string
+        return '$'
+
+    def __extract_model(self, brand, size, name):
+        #default model $ - covers transcend, intenso, pny and unseen
+        model = '$'
+        tokens = X2Blocker.tokenize(name)
+
+        if(brand == 'toshiba'):
+            # TO DO: modify to check 2 consecutive tokens - exceria pro
+            if(size == '128 gb'):
+                model_strings = ['u202', 'n302', 'thnv128', 'n401', 'n101', 'pro', 'exceria']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+            elif(size == '32 gb'):
+                model_strings = ['n401', 'pro', 'exceria']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+            elif(size == '64 gb'):
+                model_strings = ['n101', 'n401', 'pro', 'exceria']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+            elif(size == '16 gb'):
+                model_strings = ['m401']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+            # Also works for 8 gb
+            else:
+                model = self.__find_string_in_tokens([], tokens)
+        
+        elif(brand == 'samsung'):
+            if(size != ''):
+                model = '$'
+            # It's a phone
+            else:
+                # TO DO: Add more colors
+                phone_colors = ['white', 'black', 'red', 'blue']
+                phone_color = '$'
+                hault = False
+                for token in tokens:
+                    if(hault):
+                        break
+                    for color in phone_colors:
+                        if(color in token):
+                            phone_color = color
+                            hault = True
+                            break
+                
+                phone_model = '$'
+                for i in range(len(tokens)):
+                    if('galaxy' in tokens[i]):
+                        if(i < len(tokens)-1):
+                            if('note' in token[i+1]):
+                                phone_model = 'galaxy ' + 'note'
+                            else:       
+                                phone_model = 'galaxy ' + tokens[i+1]
+                        else:
+                            phone_model = 'galaxy'
+                        break
+                
+                model = phone_color + ' ' + phone_model
+        
+        elif(brand == 'kingston'):
+            if(size == '16 gb'):
+                model_strings = ['101', 'sdca3', 'sda10', 'ultimate']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+                if(model == 'ultimate'):
+                    model = 'sda10'
+            elif(size == '8 gb'):
+                model_strings = ['se9']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+        
+        elif(brand == 'sandisk'):
+            if(size == '16 gb'):
+                model_strings = ['dual', 'pro', 'extreme', 'ultra', 'class', 'plus', 'cl']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+                if(model in ['ultra', 'class', 'plus', 'cl']):
+                    model = 'ultra'
+            elif(size == '64 gb'):
+                model_strings = ['extreme', 'dual', 'ultra', 'plus']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+                if(model in ['ultra', 'plus']):
+                    model = 'ultra'
+            elif(size == '128 gb'):
+                model_strings = ['extreme', 'ext', 'glide', 'fit', 'ultra', 'plus']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+                if(model in ['ultra', 'plus']):
+                    model = 'ultra'
+                elif(model in ['extreme', 'ext']):
+                    model = 'extreme'
+            elif(size == '32 gb'):
+                model_strings = ['glide', 'ultra', 'plus']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+                if(model in ['ultra', 'plus']):
+                    model = 'ultra'
+            elif(size == '256 gb'):
+                model_strings = ['glide', 'extreme']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+        
+        elif(brand == 'lexar'):
+            model_strings = ['p20', 'c20m', 's25', 'v30', 'xqd', 'c20c', 's70', 's25', 'v10']
+            model = self.__find_string_in_tokens(model_strings, tokens)
+
+        elif(brand == 'sony'):
+            if(size == '8 gb'):
+                model_strings = ['sf8u', 'class']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+                if model in model_strings:
+                    model = 'sf8u'
+            elif(size == '16 gb'):
+                model_strings = ['usm', 'sf16', 'class']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+                if model in model_strings[1:]:
+                    model = 'sf16'    
+            elif(size == '128 gb'):
+                model_strings = ['usm']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+            elif(size == '32 gb'):
+                model_strings = ['usm32gqx', 'usm32gr']
+                model = self.__find_string_in_tokens(model_strings, tokens)
+        
+        return model
 
     def transform(self):
         """

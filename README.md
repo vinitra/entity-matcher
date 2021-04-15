@@ -1,5 +1,6 @@
-## Project 1: Sigmod contest 2021
-> Team members: Akash DHASADE, Angelika ROMANOU, Vinitra SWAMY, Eleni ZAPRIDOU  
+## Entity Matcher
+> Contest: [SIGMOD Programming Contest 2021](https://dbgroup.ing.unimo.it/sigmod21contest)  
+> Members: Akash DHASADE, Angelika ROMANOU, Vinitra SWAMY, Eleni ZAPRIDOU  
 Task: [Entity Matching](https://dbgroup.ing.unimo.it/sigmod21contest/task.shtml)  
 Team: sigmodest  
 
@@ -32,9 +33,9 @@ We computed the similarity metrics based on the matched entities that correspond
 - *Cosine similarity* of the encoded titles of each row to its corresponding blocking key group
   
 We also distill the blocking key groups into smaller matching clusters using the following clustering algorithms
-   - *K-Means*
+   - *K-Means Clustering*
    - *Agglomerative Clustering*
-   - *Birch*
+   - *Birch Clustering*
  
 We also experimented with Mean-Shift clustering and using a BERT based sentence encoder, but found both inferior to the other clustering and encoding approaches. 
 
