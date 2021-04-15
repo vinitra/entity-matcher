@@ -60,7 +60,8 @@ def run_pipeline(data, y, dataset_id, evaluate=False, verbose=False, optimize_me
         blocker = X4Blocker()
         data["title"] = data["name"]
         if optimize_method:
-            method = 'birch'
+            method = 'agglomerative'
+            cluster_n = 0
     else:
         raise ValueError("Please add a valid dataset id")
 
