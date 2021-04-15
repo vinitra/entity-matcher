@@ -7,24 +7,23 @@ This project refers to the SIGMOD programming contest 2021.
 The task consists of identifying which instances, described by properties (i.e., attributes), represent the same real-world entity (entity resolution).
 Participants are asked to solve the task among several datasets of different types (e.g., products, people, etc.). 
 Each dataset is made of a list of instances (rows) and a list of properties describing them (columns).
-The goal is to find, for each Xi dataset, all pairs of instances that match (i.e., refer to the same real-world entity). 
-[More...](https://dbgroup.ing.unimo.it/sigmod21contest/task.shtml)
+The goal is to find, for each Xi dataset, all pairs of instances that match (i.e., refer to the same real-world entity).  
+For more details, read the official SIGMOD 2021 [task description](https://dbgroup.ing.unimo.it/sigmod21contest/task.shtml).
 
 ### Methodology
 In the following section,the detailed methodology is described. 
 The implemented pipeline is comprised of two main parts; the blocking and the entity clustering. 
-Blocking tries to minimize the number of comparisons by creating blocks from the input data.
-Entity clustering
+Blocking tries to minimize the number of comparisons by assigning rows to blocks from the input data based on a specific blocking key scheme.
+Entity clustering examines the rows in each block and distills the entity-matching clusters.
 
 #### Blocking
 In this step the input dataset is broken down to a set of blocks which groups together similar entities. 
 For this problem, the blocking keys were generated based on CPU, RAM, and brand attributes.
 
 
-
 #### Clustering
 In this step, entity matching is implemented, where for each block collection and for each pair of candidate matches that co-occur in a block, it is decided if they refer to the same entity.
-In our implementation we tested two types approaches; two **distance similarity methods** and three **unsupervised learning methods**.  
+In our implementation we tested two types of approaches (five methods); two **distance similarity methods** and three **unsupervised learning methods**.  
 
 We computed the similarity metrics based on the matched entities that correspond to the blocking key, namely:
 - *Jaccard similarity* of each row to its corresponding blocking key group
@@ -53,7 +52,7 @@ After tuning our hyper-parameters, our optimal pipeline involves:
 - Encoder: **Universal Sentence Encoder** (USE)
 - Clustering method: **Agglomerative clustering** (distance threshold = 2)
 - F1 score on leaderboard: **0.678**
-- On 14.04.2021, 5th place in the rankings.
+- On 14.04.2021, our team "sigmodest" was 5th place in the rankings.
 
 > [Leaderboard](https://dbgroup.ing.unimo.it/sigmod21contest/leaders.shtml)
 
@@ -84,12 +83,12 @@ source <name_of_virtualenv>/bin/activate
 pip install -r requirements.txt
 ```
 
-Run tuning.
+Run tuning (for all encoding + similarity + clustering combinations and resulting evaluations)
 ```bash
 python src/tuning.py
 ```
 
-Run main.
+Run main (for the optimal encoding + similarity + clustering combination from the leaderboard results).
 ```bash
 python src/main.py
 ```
