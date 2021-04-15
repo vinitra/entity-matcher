@@ -33,9 +33,9 @@ We computed the similarity metrics based on the matched entities that correspond
 - *Cosine similarity* of the encoded titles of each row to its corresponding blocking key group
   
 We also distill the blocking key groups into smaller matching clusters using the following clustering algorithms
-   - *K-Means*
+   - *K-Means Clustering*
    - *Agglomerative Clustering*
-   - *Birch*
+   - *Birch Clustering*
  
 We also experimented with Mean-Shift clustering and using a BERT based sentence encoder, but found both inferior to the other clustering and encoding approaches. 
 
