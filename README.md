@@ -48,13 +48,13 @@ We tested all the aforementioned approaches in all the provided datasets. The re
 | Cosine similarity (threshold: ) with USE embeddings  | 0.80      | 0.69   | 0.72     |
 | Birch clustering with USE embeddings  | 0.80      | 0.69   | 0.72     |
 | Agglomerative Clustering (dist = 2) with USE embeddings  | 0.80      | 0.69   | **0.678**     |
- 
+  
  
 After tuning our hyper-parameters, our optimal pipeline involves:
 - Encoder: **Universal Sentence Encoder** (USE)
 - Clustering method: **Agglomerative clustering** (distance threshold = 2)
 - F1 score on leaderboard: **0.678**
-- On 14.04.2021, our team "sigmodest" was 5th place in the rankings.
+- On 14.04.2021, our team **sigmodest** was 5th place in the rankings.
 
 > [Leaderboard](https://dbgroup.ing.unimo.it/sigmod21contest/leaders.shtml)
 
@@ -63,7 +63,7 @@ After tuning our hyper-parameters, our optimal pipeline involves:
 The code is implemented in a modular and configurable fashion so as to decouple main logic with the orchestration and the hyper-parameter tuning. 
 
 Main components of the application are:
-- ```data_loader.p``` : Loads a dataset given its name. 
+- ```data_loader.py``` : Loads a dataset given its name. 
 - ```blocking.py``` : Performs the blocking functionality as described in section [Blocking](#blocking).
 - ```clustering.py``` : Performs the clustering functionality as described in section [Clustering](#clustering).
 - ```evaluation.py``` : Compares predicted pairs with the actual ones and returns classification scores (precision, recall, f1-score).
