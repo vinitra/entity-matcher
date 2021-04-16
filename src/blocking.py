@@ -23,7 +23,7 @@ class X2Blocker(Blocker):
 
     def __init__(self):
         super().__init__()
-        self.processors = ['i3', 'i5', 'i7', 'core 2', 'duo', 'dual', 'celeron', 'intel', 'amd']
+        self.processors = ['i3', 'i5', 'i7', 'amd', 'amd.', 'celeron', 'core 2', 'duo', 'dual', 'pentium', 'pentium.', 'intel']
         self.brands = ['lenovo', 'acer', 'asus', 'hp', 'dell']
         self.df = None
 
@@ -80,11 +80,14 @@ class X2Blocker(Blocker):
     def find_amd_model(tokens):
         if "64" in tokens and "x2" in tokens:
             return "64 x2"
-        for token in tokens:
+        for tokenIndex in range(len(tokens)):
+            token = tokens[tokenIndex]
             if (token.startswith("a-") or token.startswith("e-") or
                 token.startswith("a4-") or token.startswith("a8")) and \
                     token != "a-series" and token != "e-series":
                 return " " + token[0:6]
+            if (token == "a4" or token == "a8" and tokenIndex+1 < len(tokens)):
+                return " " + token + "-" + tokens[tokenIndex+1][0:3]
         return ""
 
     def __check_processor(self, cpu_val, title_val, cpu_brand):
@@ -92,13 +95,15 @@ class X2Blocker(Blocker):
         for p in self.processors:
             if p in cpu_val:
                 cpu = p
-                if cpu != "intel":
+                if cpu != "intel" or cpu != "core 2":
                     break
 
-        if cpu == "duo" or cpu == "dual":
+        if cpu == "duo" or cpu == "dual" or cpu == "celeron" or cpu == 'pentium' or cpu == 'pentium.':
             cpu = "core 2"
         elif cpu == "intel i7":
             cpu = "core i7"
+        elif cpu == "amd.":
+            cpu = "amd"
 
         # if amd find which specific amd
         if cpu == "amd":
@@ -152,7 +157,9 @@ class X2Blocker(Blocker):
                     break
         # Acer
         elif brand == "acer":
-            if "aspire" in tokens_title:
+            if "extensa" in tokens_title:
+                model = "extensa"
+            else:
                 model = "aspire"
                 for tokenIndex in range(len(tokens_title)):
                     token = tokens_title[tokenIndex]
@@ -170,8 +177,6 @@ class X2Blocker(Blocker):
                     elif token.startswith("5742"):
                         model = model + " 5742"
                         break
-            elif "extensa" in tokens_title:
-                model = "extensa"
         # Asus
         elif brand == "asus":
             for token in tokens_title:
@@ -203,8 +208,8 @@ class X2Blocker(Blocker):
                             break
                         elif token.startswith("15") and tokenIndex+1 < len(tokens_title) and \
                                 (tokens_title[tokenIndex + 1].startswith("g0") or
-                                    tokens_title[tokenIndex + 1].startswith("d0") or
-                                    tokens_title[tokenIndex + 1].startswith("f0")):
+                                 tokens_title[tokenIndex + 1].startswith("d0") or
+                                 tokens_title[tokenIndex + 1].startswith("f0")):
                             model = token + "-" + tokens_title[tokenIndex + 1]
                             break
         # Dell
@@ -235,18 +240,21 @@ class X2Blocker(Blocker):
         # if I did not find the ram capacity from the ram attribute try with title
         if ram == 100:
             for tokenIndex in range(len(title_tokens)):
-                if title_tokens[tokenIndex].endswith("gb") and (title_tokens[tokenIndex + 1].startswith("ddr") or
-                                                                title_tokens[tokenIndex + 1] == "ram" or
-                                                                title_tokens[tokenIndex + 1] == "memory"):
-                    if title_tokens[tokenIndex] == "gb":
-                        ram_t = float(title_tokens[tokenIndex - 1])
-                        if ram_t < ram: ram = ram_t
+                if title_tokens[tokenIndex].endswith("gb") :
+                    if title_tokens[tokenIndex] == "gb" and (title_tokens[tokenIndex + 1].startswith("ddr") or
+                                                             title_tokens[tokenIndex + 1] == "ram" or
+                                                             title_tokens[tokenIndex + 1] == "memory"):
+                        if (title_tokens[tokenIndex - 1]).replace('.', '', 1).isdigit():
+                            ram_t = float(title_tokens[tokenIndex - 1])
+                            if ram_t < ram: ram = ram_t
                     else:
-                        ram_t = float(title_tokens[tokenIndex][0:-2])
-                        if ram_t < ram: ram = ram_t
+                        if (title_tokens[tokenIndex][0:-2]).replace('.', '', 1).isdigit():
+                            ram_t = float(title_tokens[tokenIndex][0:-2])
+                            if ram_t < ram: ram = ram_t
                     break
         ram_string = str(ram)
         if ram_string == "100": ram_string = ""
+        if ram_string == "": ram_string = "4.0"
         return ram_string
 
 
