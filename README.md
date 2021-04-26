@@ -14,8 +14,10 @@ The goal is to find, for each Xi dataset, all pairs of instances that match (i.e
 For more details, read the [official SIGMOD 2021 task description](https://dbgroup.ing.unimo.it/sigmod21contest/task.shtml).
 
 ### Methodology
-In the following section, we describe our methodology. 
-The implemented pipeline is comprised of two main parts; the blocking and the entity clustering. 
+
+![image](https://user-images.githubusercontent.com/72170466/116088668-5d96aa80-a6a2-11eb-9c39-cadfbd31fbf3.png)
+
+In the following section, we describe our methodology. The implemented pipeline is comprised of two main parts; the blocking and the entity clustering. 
 Blocking tries to minimize the number of comparisons by assigning rows to blocks from the input data based on a specific blocking key scheme.
 Entity clustering examines the rows in each block and distills the entity-matching clusters.
 
