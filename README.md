@@ -56,7 +56,7 @@ We tested all the aforementioned approaches in all the provided datasets. The re
 After tuning our hyper-parameters, our optimal pipeline involves:
 - Encoder: **Universal Sentence Encoder** (USE)
 - Clustering method: **Agglomerative clustering** (distance threshold = 2)
-- F1 score on leaderboard: **0.678**
+- F1 score on leaderboard: **0.744**
 - On 14.04.2021, our team **sigmodest** was 5th place in the rankings.
 
 > [Leaderboard](https://dbgroup.ing.unimo.it/sigmod21contest/leaders.shtml)
