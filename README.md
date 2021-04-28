@@ -7,7 +7,7 @@ Team: sigmodest
 ### Project Overview
 This project refers to the SIGMOD programming contest 2021.
 The task consists of identifying which instances, described by properties (i.e., attributes), represent the same real-world entity (entity resolution).
-Participants are asked to solve the task among several datasets of different types (e.g., products, people, etc.). 
+Participants are asked to solve the task among several datasets of different types (e.g., laptops, mobile devices, etc.). 
 Each dataset is made of a list of instances (rows) and a list of properties describing them (columns).
 The goal is to find, for each Xi dataset, all pairs of instances that match (i.e., refer to the same real-world entity).  
   
