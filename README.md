@@ -28,7 +28,10 @@ The entities in datasets X2 and X3 provided for the Sigmoid contest represent La
 
 <img width="408" alt="pic1" src="https://user-images.githubusercontent.com/24961068/116411503-12ad9c00-a836-11eb-88a2-894d9f3b89f8.png">
 
-With this blocking key and further steps in the pipeline, we could only manage to achieve an F1 score of 50% on the test dataset. Thus we decided to further improve our blocking scheme.
+With this blocking key and further steps in the pipeline, we could only manage to achieve an F1 score of 50% on the test dataset. Thus we decided to further improve our blocking scheme. Studying the dataset revealed presence of model numbers for laptops which are specific to their brand and configuration. In the picture below, underlined in red and blue are model numbers for two different ACER laptops which uniquely identify them. Further, any two matching entities always have the same RAM as underlined in brown in and pink. 
+
+<img width="1075" alt="pic2" src="https://user-images.githubusercontent.com/24961068/116416094-57d3cd00-a83a-11eb-8e2c-4b83197f05d1.png">
+ 
 
 #### Clustering
 In this step, entity matching is implemented, where for each block collection and for each pair of candidate matches that co-occur in a block, it is decided if they refer to the same entity.
