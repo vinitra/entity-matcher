@@ -22,9 +22,13 @@ Blocking tries to minimize the number of comparisons by assigning rows to blocks
 Entity clustering examines the rows in each block and distills the entity-matching clusters.
 
 #### Blocking
-In this step the input dataset is broken down to a set of blocks which groups together similar entities. 
-For this problem, the blocking keys were generated based on CPU, RAM, and brand attributes.
+Blocking refers to the strategy of reducing number of potential comparisons between entities in the dataset using concept of blocks. A naive way to match entities would be to perform an `O(n^2)` comparison which is highly inefficient for very large datasets. Blocking generates groups or blocks of entities which are expected to be potential matches based on any simple criteria. Once the blocks are generated, entities are matched with other entities only within a block thereby significantly reducing number of comparisons. A very restrictive blocking scheme thus may hurt recall.
 
+The entities in datasets X2 and X3 provided for the Sigmoid contest represent Laptops sold on different e-commerce websites. It is easy to infer that any two matching laptops will always have same `brand` and `cpu`. Thus `brand` and `cpu` formed our initial blocking key. The challenge here was to address missing values of these attributes for some of the tuples. To solve this problem we construct an exclusive set of all brands and cpus observed in the entire training dataset. The title attribute essentially contains data from all remaining columns as one large string (which possibly appears as description of item on e-commerce website). We then simply search for these brands and cpus (from the set) in the title attribute of the row with missing values. Below picture shows sample matching entities in the dataset. Observe the brand and cpu column, hypens separate matching entities.
+
+<img width="408" alt="pic1" src="https://user-images.githubusercontent.com/24961068/116411503-12ad9c00-a836-11eb-88a2-894d9f3b89f8.png">
+
+With this blocking key and further steps in the pipeline, we could only manage to achieve an F1 score of 50% on the test dataset. Thus we decided to further improve our blocking scheme.
 
 #### Clustering
 In this step, entity matching is implemented, where for each block collection and for each pair of candidate matches that co-occur in a block, it is decided if they refer to the same entity.
