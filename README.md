@@ -26,11 +26,11 @@ Blocking refers to the strategy of reducing number of potential comparisons betw
 
 **X2 and X3**
 
-The entities in datasets X2 and X3 provided for the Sigmoid contest represent Laptops sold on different e-commerce websites. It is easy to infer that any two matching laptops will always have same `brand` and `cpu`. Thus `brand` and `cpu` formed our initial blocking key. The challenge here was to address missing values of these attributes for some of the tuples. To solve this problem we construct an exclusive set of all brands and cpus observed in the entire training dataset. The title attribute essentially contains data from all remaining columns as one large string (which possibly appears as description of item on e-commerce website). We then simply search for these brands and cpus (from the set) in the title attribute of the row with missing values. Below picture shows sample matching entities in the dataset. Observe the brand and cpu column, hypens separate matching entities.
+The entities in datasets X2 and X3 provided for the Sigmoid contest represent Laptops sold on different e-commerce websites. It is easy to infer that any two matching laptops will always have same `brand` and `cpu`. Thus `brand` and `cpu` formed our initial blocking key. The challenge here was to address missing values of these attributes for some of the tuples. To solve this problem we construct an exclusive set of all brands and cpus observed in the entire training dataset. The `title` attribute essentially contains data from all remaining columns as one large string (which possibly appears as description of item on e-commerce website). We then simply search for these brands and cpus (from the set) in the title attribute of the row with missing values. Below picture shows sample matching entities in the dataset. Observe the `brand` and `cpu` column, hypens separate matching entities.
 
 <img width="408" alt="pic1" src="https://user-images.githubusercontent.com/24961068/116411503-12ad9c00-a836-11eb-88a2-894d9f3b89f8.png">
 
-With this blocking key and further steps in the pipeline, we could only manage to achieve an F1 score of 50% on the test dataset. Thus we decided to further improve our blocking scheme. Studying the dataset revealed presence of model numbers for laptops which are specific to their brand and configuration. In the picture below, underlined in red and blue are model numbers for two different ACER laptops which uniquely identify them. Further, any two matching entities always have the same RAM as underlined in brown in and pink. Since there is no direct way to identify model numbers, we implemented a rule based scheme derived from manual inspection of training dataset. The scheme was brand specific and briefly searched for specific patterns of model numbers based on the brand. We idenity RAM by simply searching for `r'd+ GB'` pattern in the `ram_capacity` or `title` column.
+With this blocking key and further steps in the pipeline, we could only manage to achieve an F1 score of 50% on the test dataset. Thus we decided to further improve our blocking scheme. Studying the dataset revealed presence of model numbers for laptops which are specific to their brand and configuration. In the picture below, underlined in red and blue are model numbers for two different ACER laptops which uniquely identify them. Further, any two matching entities always have the same RAM as underlined in brown and in pink. Since there is no direct way to identify model numbers, we implemented a rule based scheme derived from manual inspection of training dataset. The scheme was brand specific and briefly searched for specific patterns of model numbers based on the brand. We idenity RAM by simply searching for `r'd+ GB'` pattern in the `ram_capacity` or `title` column.
 
 <img width="1075" alt="pic2" src="https://user-images.githubusercontent.com/24961068/116416094-57d3cd00-a83a-11eb-8e2c-4b83197f05d1.png">
  
@@ -43,9 +43,10 @@ Thus, our blocking key for X2 and X3 datasets could be summarised as:
 Most entities in X4 dataset represent pendrives/flash drives while some represent mobile phones. Similar to our previous strategy, we studied the training dataset and identified the following blocking scheme:
 
 `blocking_key = brand + size + model` (for pendrives)
+
 `blocking_key = brand + model + phone_color` (for mobile phones)
 
-The implementation as above involved a rule based scheme derived from manual inspection. On failing to identify any of the blocking attributes using the rule based scheme, we use a `$` token to indicate `unknown` or `unidentifiable` attributes. 
+The implementation as above involved a rule based scheme derived from manual inspection. On failing to identify any of the blocking attributes using the rule based scheme, we use a `$` token to indicate _unidentifiable_ attributes. 
 
 #### Clustering
 In this step, entity matching is implemented, where for each block collection and for each pair of candidate matches that co-occur in a block, it is decided if they refer to the same entity.
