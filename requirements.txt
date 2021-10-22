@@ -21,7 +21,7 @@ importlib-metadata==3.10.0
 joblib==1.0.1
 Keras-Preprocessing==1.1.2
 Markdown==3.3.4
-nltk==3.6.1
+nltk==3.6.5
 numpy==1.19.5
 oauthlib==3.1.0
 opt-einsum==3.3.0
